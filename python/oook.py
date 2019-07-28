@@ -4,7 +4,7 @@
 #
 # (c) David Haworth
 #
-# This file (Oook.py) is part of Oook
+# This file (oook.py) is part of Oook
 #
 # Oook is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,35 +19,34 @@
 # You should have received a copy of the GNU General Public License
 # along with Oook.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import os
+import sys
 import hashlib
 
-libRoot = "."
-
+# Global variables
 config = { }
 fieldmap = { }
 
+def main():
+	if not os.access(sys.argv[2], os.R_OK):
+		print 'Cannot access', sys.argv[2]
+		usage()
+		exit(1)
+	if sys.argv[1] == 'verify':
+		verify_library(sys.argv[2])
+		process_lib(sys.argv[2], verify_file)
+	else:
+		print 'Unknown command ', sys.argv[1]
+		usage()
+		exit(1)
 
-def checksum(fname):
-	hash_sha512 = hashlib.sha512()
-	with open(fname, "rb") as fo:
-		while True:
-			chunk = fo.read(1048576)
-			hash_sha512.update(chunk)
-			if len(chunk) < 1048576 :
-				break
-	return hash_sha512.hexdigest()
+def usage():
+	print 'Usage: oook <command> <oook-file> [options]'
 
-def test1():
-	for dName, sdName, fList in os.walk(libRoot):
-		for fileName in fList:
-			fullName = os.path.join(dName, fileName)
-			print "FILE:", fileName
-			print "  LOCATION:", os.path.relpath(dName, libRoot)
-			print "  CHECKSUM:", checksum(fullName)
+def verify_library(lname):
+	process_lib(lname, verify_file)
 
-def readlib(fname, func):
+def process_lib(fname, func):
 	global cfg, fieldmap
 	with open(fname, "r") as fo:
 		for line in fo:
@@ -65,11 +64,21 @@ def readlib(fname, func):
 
 def verify_file(fields):
 	fullpath = '/'.join( (config['Root'], fields[fieldmap['Path']], fields[fieldmap['File']]) )
-	hash = checksum(fullpath)
-	if hash != fields[fieldmap['Hash']]:
-		print "Discrepancy: ", fullpath
+	if os.access(fullpath, os.R_OK):
+		hash = hash_file(fullpath)
+		if hash != fields[fieldmap['Hash']]:
+			print "Hash discrepancy: ", fullpath
+	else:
+		print "Missing file: ", fullpath
 
-def test2():
-	readlib('DavesLibrary.oook.csv', verify_file)
+def hash_file(fname):
+	hash_sha512 = hashlib.sha512()
+	with open(fname, "rb") as fo:
+		while True:
+			chunk = fo.read(1048576)
+			hash_sha512.update(chunk)
+			if len(chunk) < 1048576 :
+				break
+	return hash_sha512.hexdigest()
 
-test2()
+main()
