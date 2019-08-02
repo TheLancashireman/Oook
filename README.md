@@ -8,11 +8,11 @@
 # Under construction...
 
 ## Usage:
-* oook[.py]  <command> <library-db> [options]
+* oook[.py] command library-db [options]
 
 ## Commands:
 * verify - for each file in your library-db, generate a hash and compare with the stored hash
-
+* scan - scan for new files
 
 ## Structure of library-db
 The library-db file (conventionally called XXX.oook.csv for convenience) is a vertical-bar-separated
@@ -46,6 +46,7 @@ The columns can be given in any order (provided the record type is the first).
 * Edition - any information about the edition or revision
 * Author - who wrote it
 * Date - when published
+* Publisher - who published it
 * Hash - the hash sum of the file
 
 For the moment, File, Path and Hash are compulsory. You can add extra columns if you like
